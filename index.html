@@ -1,39 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>HKHT Map</title>
-    <style>
-      html, body {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-      }
-      #map {
-        width: 100%;
-        height: 100%;
-      }
-    </style>
-    <script src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=zj8vyjsrf7"></script>
-  </head>
-  <body>
-    <div id="map"></div>
-    <script>
-      var map = new naver.maps.Map('map', {
-        center: new naver.maps.LatLng(35.8383409525416, 128.502783192828),
-        zoom: 15,
-        zoomControl: true,
-        zoomControlOptions: {
-          position: naver.maps.Position.TOP_RIGHT
-        }
-      });
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>네이버 지도 한국하이테크</title>
+  <style>
+    #map {
+      width: 100%;
+      height: 400px;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+  </style>
+  <!-- 아래 ncpClientId=자신의 클라이언트ID로 변경하세요 -->
+  <script
+    type="text/javascript"
+    src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=zj8vyjsrf7"
+  ></script>
+</head>
+<body>
+  <div id="map"></div>
 
-      var marker = new naver.maps.Marker({
-        position: new naver.maps.LatLng(35.8383409525416, 128.502783192828),
-        map: map,
-        title: "한국하이테크"
-      });
-    </script>
-  </body>
+  <script>
+    // 지도 생성
+    var map = new naver.maps.Map("map", {
+      center: new naver.maps.LatLng(35.8383409525416, 128.502783192828), // 한국하이테크
+      zoom: 10,
+      zoomControl: true,
+      zoomControlOptions: {
+        position: naver.maps.Position.TOP_RIGHT,
+      },
+    });
+
+    // 마커 생성
+    var marker = new naver.maps.Marker({
+      position: new naver.maps.LatLng(35.8383409525416, 128.502783192828),
+      map: map,
+      title: "한국하이테크",
+    });
+  </script>
+</body>
 </html>

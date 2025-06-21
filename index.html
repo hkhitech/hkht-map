@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>HKHT Naver Map</title>
 
+  <!-- ✅ 폰트: DM Sans -->
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans&display=swap" rel="stylesheet" />
 
   <style>
@@ -17,7 +18,7 @@
 
     #map {
       width: 100%;
-      height: 80%;
+      height: 75%;
     }
 
     #language-toggle {
@@ -29,7 +30,7 @@
     #language-toggle button {
       border: none;
       border-radius: 4px;
-      padding: 12px 12px;
+      padding: 12px 16px;
       margin-left: 8px;
       font-size: 16px;
       cursor: pointer;
@@ -48,7 +49,7 @@
     #address-display {
       background-color: #ffffff;
       color: #243BB2;
-      padding: 24px 24px;
+      padding: 24px;
       text-align: center;
       font-size: 18px;
       line-height: 1.5;
@@ -61,24 +62,26 @@
     }
 
     #address-text {
-      max-width: 80%;
+      max-width: 100%;
+      word-break: keep-all;
     }
 
     #copy-button {
-      background: #ffffff;
-      color: #243BB2;
+      background: #243BB2;
+      color: #ffffff;
       border: none;
       border-radius: 4px;
-      padding: 12px 12px;
-      font-size: 64px;
+      padding: 8px 16px;
+      font-size: 16px;
       cursor: pointer;
     }
 
     #copy-button:hover {
-      background: #f0f0f0;
+      background: #1e30a5;
     }
   </style>
 
+  <!-- ✅ 네이버 지도 API -->
   <script src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=zj8vyjsrf7"></script>
 </head>
 <body>
@@ -98,8 +101,8 @@
     const position = new naver.maps.LatLng(35.8383409525416, 128.502783192828);
 
     const addressData = {
-      ko: '대구광역시 달서구, 성서공단로35길 30, (한국하이테크)',
-      en: '30, Seongseogongdan-ro 35-gil, Dalseo-gu, Daegu, Republic of Korea (HKHT)'
+      ko: '대구광역시 달서구\n성서공단로35길 30\n(한국하이테크)',
+      en: '30, Seongseogongdan-ro 35-gil,\nDalseo-gu, Daegu,\nRepublic of Korea (HKHT)'
     };
 
     const copyText = {
@@ -148,10 +151,12 @@
     function setLanguage(lang) {
       currentLang = lang;
 
-      addressText.innerText = addressData[lang]; // 자동 줄바꿈 위해 innerText 사용
+      // 줄바꿈 적용을 위해 innerText 사용
+      addressText.innerText = addressData[lang];
       infowindow.setContent(makeInfowindowContent(lang));
       copyBtn.textContent = copyText[lang].button;
 
+      // 버튼 색상 처리
       btnKo.classList.remove('active', 'inactive');
       btnEn.classList.remove('active', 'inactive');
       if (lang === 'ko') {
@@ -180,6 +185,7 @@
       });
     }
 
+    // 초기 세팅
     setLanguage(currentLang);
   </script>
 </body>

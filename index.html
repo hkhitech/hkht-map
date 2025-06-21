@@ -4,53 +4,114 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>HKHT Naver Map</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans&display=swap" rel="stylesheet" />
+
   <style>
     html, body {
       margin: 0;
       padding: 0;
       height: 100%;
-      font-family: sans-serif;
+      font-family: 'DM Sans', sans-serif;
     }
+
     #map {
       width: 100%;
-      height: 90%;
+      height: 85%;
     }
+
     #language-toggle {
       padding: 10px;
       text-align: right;
-      background: #f8f8f8;
+      background: #ffffff;
     }
+
     #language-toggle button {
-      margin-left: 10px;
+      border: none;
+      border-radius: 4px;
+      padding: 6px 12px;
+      margin-left: 8px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    #language-toggle button.active {
+      background-color: #243BB2;
+      color: #FFFFFF;
+    }
+
+    #language-toggle button.inactive {
+      background-color: #292A30;
+      color: #292A30;
+    }
+
+    #address-display {
+      background-color: #243BB2;
+      color: #ffffff;
+      padding: 12px 16px;
+      text-align: center;
+      font-size: 16px;
+      line-height: 1.5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      white-space: normal;
+    }
+
+    #address-text {
+      max-width: 80%;
+    }
+
+    #copy-button {
+      background: #ffffff;
+      color: #243BB2;
+      border: none;
+      border-radius: 4px;
       padding: 5px 10px;
       font-size: 14px;
       cursor: pointer;
     }
-    #address-display {
-      padding: 10px;
-      text-align: center;
-      font-size: 16px;
+
+    #copy-button:hover {
+      background: #f0f0f0;
     }
   </style>
+
   <script src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=zj8vyjsrf7"></script>
 </head>
 <body>
   <div id="language-toggle">
-    <button onclick="setLanguage('ko')">한국어</button>
-    <button onclick="setLanguage('en')">English</button>
+    <button id="btn-ko" onclick="setLanguage('ko')">한국어</button>
+    <button id="btn-en" onclick="setLanguage('en')">English</button>
   </div>
 
   <div id="map"></div>
-  <div id="address-display">Loading address...</div>
+
+  <div id="address-display">
+    <span id="address-text">Loading address...</span>
+    <button id="copy-button" onclick="copyAddress()">복사</button>
+  </div>
 
   <script>
     const position = new naver.maps.LatLng(35.8383409525416, 128.502783192828);
+
     const addressData = {
-      ko: '대구광역시 달서구 성서공단로 11길 62-12 (한국하이테크)',
-      en: '62-12, Seongseogongdan-ro 11-gil, Dalseo-gu, Daegu, Republic of Korea (HK Hightech)'
+      ko: '대구광역시 달서구\n성서공단로 11길 62-12\n(한국하이테크)',
+      en: '62-12, Seongseogongdan-ro 11-gil,\nDalseo-gu, Daegu,\nRepublic of Korea (HKHT)'
     };
 
-    // 언어 감지 함수
+    const copyText = {
+      ko: { button: '복사', success: '복사됨!' },
+      en: { button: 'Copy', success: 'Copied!' }
+    };
+
+    const naverMapSearchURL = {
+      ko: 'https://map.naver.com/p/search/대구광역시 달서구 성서공단로 11길 62-12',
+      en: 'https://map.naver.com/p/search/62-12 Seongseogdan-ro 11-gil Daegu'
+    };
+
     function detectLanguage() {
       const lang = navigator.language || navigator.userLanguage;
       return lang.startsWith('ko') ? 'ko' : 'en';
@@ -66,22 +127,60 @@
     const marker = new naver.maps.Marker({
       position: position,
       map: map,
-      title: 'HK Hightech'
+      title: 'HANKOOK HI-TECH'
     });
 
-    const infowindow = new naver.maps.InfoWindow({
-      content: `<div style="padding:8px;font-size:13px;">${addressData[currentLang]}</div>`
+    let infowindow = new naver.maps.InfoWindow({
+      content: makeInfowindowContent(currentLang)
     });
+
     infowindow.open(map, marker);
 
-    const addressDiv = document.getElementById('address-display');
-    addressDiv.textContent = addressData[currentLang];
+    naver.maps.Event.addListener(marker, "click", function () {
+      window.open(naverMapSearchURL[currentLang], "_blank");
+    });
+
+    const addressText = document.getElementById('address-text');
+    const copyBtn = document.getElementById('copy-button');
+    const btnKo = document.getElementById('btn-ko');
+    const btnEn = document.getElementById('btn-en');
 
     function setLanguage(lang) {
       currentLang = lang;
-      addressDiv.textContent = addressData[lang];
-      infowindow.setContent(`<div style="padding:8px;font-size:13px;">${addressData[lang]}</div>`);
+
+      addressText.innerText = addressData[lang]; // 자동 줄바꿈 위해 innerText 사용
+      infowindow.setContent(makeInfowindowContent(lang));
+      copyBtn.textContent = copyText[lang].button;
+
+      btnKo.classList.remove('active', 'inactive');
+      btnEn.classList.remove('active', 'inactive');
+      if (lang === 'ko') {
+        btnKo.classList.add('active');
+        btnEn.classList.add('inactive');
+      } else {
+        btnEn.classList.add('active');
+        btnKo.classList.add('inactive');
+      }
     }
+
+    function makeInfowindowContent(lang) {
+      return `<div style="padding:8px 12px; font-size:13px; border-radius:5px; white-space:pre-line; max-width:220px;">${addressData[lang]}</div>`;
+    }
+
+    function copyAddress() {
+      const text = addressData[currentLang].replace(/\n/g, ' ');
+      const originalText = copyText[currentLang].button;
+      const copiedText = copyText[currentLang].success;
+
+      navigator.clipboard.writeText(text).then(() => {
+        copyBtn.textContent = copiedText;
+        setTimeout(() => {
+          copyBtn.textContent = originalText;
+        }, 2000);
+      });
+    }
+
+    setLanguage(currentLang);
   </script>
 </body>
 </html>

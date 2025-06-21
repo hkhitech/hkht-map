@@ -209,10 +209,12 @@
       window.open(mapLink, "_blank");
     });
 
-    // 인포윈도우 클릭 시 새 창 열기
+    // 인포윈도우 내 링크 클릭 시 새 창 열기 이벤트 (수정됨)
     naver.maps.Event.addListener(infoWindow, 'domready', () => {
-      const link = document.querySelector('.NaverMap a');
-      if(link) {
+      // 인포윈도우 내 <a> 태그를 정확히 찾아 클릭 이벤트 추가
+      const iw = document.querySelector('.nm-info-window') || document;
+      const link = iw.querySelector('a');
+      if (link) {
         link.onclick = (e) => {
           e.preventDefault();
           window.open(mapLink, '_blank');

@@ -71,31 +71,30 @@
       gap: 24px; /* 요소 간 24px 간격 */
       color: #292A30;
       font-weight: 300;
-      flex-wrap: wrap;
+      flex-wrap: nowrap; /* 줄 바꿈 없이 한 줄로 */
+      overflow-x: auto; /* 넘칠 때 가로 스크롤 허용 */
+      -webkit-overflow-scrolling: touch; /* 모바일 부드러운 스크롤 */
     }
 
     #address-text {
       user-select: text;
-      white-space: normal;
-      overflow-wrap: break-word;
-      flex-grow: 1;
-      flex-shrink: 1;
-      min-width: 0;
+      white-space: nowrap; /* 줄 바꿈 없음 */
+      flex-shrink: 0; /* 텍스트 축소 방지 */
       font-size: 18px; /* 기본 데스크톱 폰트 크기 */
     }
 
     #copy-button {
-      background-color: #E4E5EB;
+      background-color: #DCDDE0;
       color: #56585E;
       border: none;
       border-radius: 16px;
-      padding: 8px 8px;
+      padding: 8px 16px;
       font-size: 16px;
       cursor: pointer;
       white-space: nowrap;
       user-select: none;
       transition: background-color 0.3s ease;
-      flex-shrink: 0; /* 버튼은 축소 안되도록 */
+      flex-shrink: 0;
     }
 
     #copy-button:hover {
@@ -105,7 +104,7 @@
     .infowindow-content {
       padding: 4px 12px;
       font-size: 16px;
-      border-radius: 56px;
+      border-radius: 50px;
       background-color: white;
       color: #292A30;
       cursor: pointer;
@@ -113,7 +112,7 @@
       white-space: pre-line;
       max-width: 220px;
       box-sizing: border-box;
-      border: none;
+      border: none !important; /* 테두리 완전 제거 */
       text-decoration: none;
       display: inline-block;
     }
@@ -140,7 +139,7 @@
       }
 
       #copy-button {
-        padding: 12px 12px;
+        padding: 12px 16px;
         font-size: 14px;
       }
     }
@@ -157,8 +156,8 @@
 
     <div id="map"></div>
 
-    <div id="address-display">
-      <span id="address-text">Loading address...</span>
+    <div id="address-display" role="region" aria-label="주소 및 복사 버튼">
+      <span id="address-text" tabindex="0">Loading address...</span>
       <button id="copy-button" onclick="copyAddress()">복사</button>
     </div>
   </div>
@@ -202,15 +201,18 @@
 
     infowindow.open(map, marker);
 
+    // 인포윈도우의 DOM 준비 완료 시 클릭 이벤트 할당
     naver.maps.Event.addListener(infowindow, 'domready', () => {
       const iwContent = document.querySelector('.infowindow-content');
       if (iwContent) {
+        iwContent.style.cursor = 'pointer';
         iwContent.onclick = () => {
           window.open(infoWindowURL, '_blank');
         };
       }
     });
 
+    // 마커 클릭 시 새 창 열기
     naver.maps.Event.addListener(marker, "click", function () {
       window.open(infoWindowURL, "_blank");
     });

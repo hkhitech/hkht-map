@@ -3,44 +3,85 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>네이버 지도 한국하이테크</title>
+  <title>HKHT Naver Map</title>
   <style>
-    #map {
-      width: 100%;
-      height: 400px;
-    }
     html, body {
       margin: 0;
       padding: 0;
       height: 100%;
+      font-family: sans-serif;
+    }
+    #map {
+      width: 100%;
+      height: 90%;
+    }
+    #language-toggle {
+      padding: 10px;
+      text-align: right;
+      background: #f8f8f8;
+    }
+    #language-toggle button {
+      margin-left: 10px;
+      padding: 5px 10px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    #address-display {
+      padding: 10px;
+      text-align: center;
+      font-size: 16px;
     }
   </style>
-  <!-- 아래 ncpClientId=자신의 클라이언트ID로 변경하세요 -->
-  <script
-    type="text/javascript"
-    src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=zj8vyjsrf7"
-  ></script>
+  <script src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=zj8vyjsrf7"></script>
 </head>
 <body>
+  <div id="language-toggle">
+    <button onclick="setLanguage('ko')">한국어</button>
+    <button onclick="setLanguage('en')">English</button>
+  </div>
+
   <div id="map"></div>
+  <div id="address-display">Loading address...</div>
 
   <script>
-    // 지도 생성
-    var map = new naver.maps.Map("map", {
-      center: new naver.maps.LatLng(35.8383409525416, 128.502783192828), // 한국하이테크
-      zoom: 10,
-      zoomControl: true,
-      zoomControlOptions: {
-        position: naver.maps.Position.TOP_RIGHT,
-      },
+    const position = new naver.maps.LatLng(35.8383409525416, 128.502783192828);
+    const addressData = {
+      ko: '대구광역시 달서구 성서공단로 11길 62-12 (한국하이테크)',
+      en: '62-12, Seongseogongdan-ro 11-gil, Dalseo-gu, Daegu, Republic of Korea (HK Hightech)'
+    };
+
+    // 언어 감지 함수
+    function detectLanguage() {
+      const lang = navigator.language || navigator.userLanguage;
+      return lang.startsWith('ko') ? 'ko' : 'en';
+    }
+
+    let currentLang = detectLanguage();
+
+    const map = new naver.maps.Map('map', {
+      center: position,
+      zoom: 16
     });
 
-    // 마커 생성
-    var marker = new naver.maps.Marker({
-      position: new naver.maps.LatLng(35.8383409525416, 128.502783192828),
+    const marker = new naver.maps.Marker({
+      position: position,
       map: map,
-      title: "한국하이테크",
+      title: 'HK Hightech'
     });
+
+    const infowindow = new naver.maps.InfoWindow({
+      content: `<div style="padding:8px;font-size:13px;">${addressData[currentLang]}</div>`
+    });
+    infowindow.open(map, marker);
+
+    const addressDiv = document.getElementById('address-display');
+    addressDiv.textContent = addressData[currentLang];
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      addressDiv.textContent = addressData[lang];
+      infowindow.setContent(`<div style="padding:8px;font-size:13px;">${addressData[lang]}</div>`);
+    }
   </script>
 </body>
 </html>

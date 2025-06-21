@@ -8,6 +8,8 @@
   <!-- DM Sans 폰트 -->
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans&display=swap" rel="stylesheet" />
 
+  <script src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=zj8vyjsrf7"></script>
+
   <style>
     html, body {
       margin: 0; padding: 0; height: 100%;
@@ -71,8 +73,8 @@
       gap: 24px;
       color: #292A30;
       font-weight: 300;
-      white-space: nowrap; /* 줄바꿈 없이 한 줄 표시 */
-      overflow-x: auto; /* 주소 길어도 스크롤 없이 컨테이너 내에서 자동 줄임 */
+      white-space: nowrap;
+      overflow-x: hidden;
     }
 
     #address-text {
@@ -80,6 +82,8 @@
       font-size: 18px;
       flex-shrink: 1;
       min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     #copy-button {
@@ -100,26 +104,6 @@
       background-color: #c5c7ca;
     }
 
-    /* 인포윈도우 스타일 완전 커스텀 */
-    .infowindow-content {
-      padding: 4px 12px !important;
-      font-size: 16px !important;
-      border-radius: 50px !important;
-      background-color: white !important;
-      color: #292A30 !important;
-      cursor: pointer !important;
-      user-select: none !important;
-      white-space: pre-line !important;
-      max-width: 220px !important;
-      box-sizing: border-box !important;
-      border: none !important;
-      box-shadow: none !important;
-      outline: none !important;
-      text-decoration: none !important;
-      display: inline-block !important;
-    }
-
-    /* 반응형 */
     @media (max-width: 768px) {
       #container {
         height: 70vh;
@@ -146,8 +130,6 @@
       }
     }
   </style>
-
-  <script src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=zj8vyjsrf7"></script>
 </head>
 <body>
   <div id="container">
@@ -168,8 +150,8 @@
     const position = new naver.maps.LatLng(35.8383409525416, 128.502783192828);
 
     const addressData = {
-      ko: '대구광역시 달서구 성서공단로35길 30',
-      en: '30, Seongseogongdan-ro 35-gil, Dalseo-gu, Daegu, Republic of Korea'
+      ko: '대구광역시 달서구 성서공단로35길 30 (한국하이테크)',
+      en: '30, Seongseogongdan-ro 35-gil, Dalseo-gu, Daegu, Republic of Korea (HKHT)'
     };
 
     const copyText = {
@@ -177,7 +159,6 @@
       en: { button: 'Copy', success: 'Copied!' }
     };
 
-    // 고정 URL (언어 구분 없이 동일 링크)
     const infoWindowURL = 'https://naver.me/xMnw7c4r';
 
     function detectLanguage() {
@@ -195,27 +176,19 @@
     const marker = new naver.maps.Marker({
       position: position,
       map: map,
-      title: 'HANKOOK HI-TECH'
+      title: 'HANKOOK HI-TECH',
+      cursor: 'pointer' // 마커 위 커서 손가락으로
     });
 
-    let infowindow = new naver.maps.InfoWindow({
-      content: makeInfowindowContent()
+    // 인포윈도우 생성 (주소는 볼드체)
+    const infowindow = new naver.maps.InfoWindow({
+      content: `<div style="font-weight:bold; padding:10px; font-size:14px;">${addressData[currentLang]}</div>`
     });
 
+    // 인포윈도우 열기
     infowindow.open(map, marker);
 
-    // 클릭 시 새 창 열기 및 손가락 커서 적용
-    naver.maps.Event.addListener(infowindow, 'domready', () => {
-      const iwContent = document.querySelector('.infowindow-content');
-      if (iwContent) {
-        iwContent.style.cursor = 'pointer';
-        iwContent.onclick = () => {
-          window.open(infoWindowURL, '_blank');
-        };
-      }
-    });
-
-    // 마커 클릭 시에도 새 창 열기
+    // 마커 클릭 시 새 창으로 네이버 지도 주소 열기
     naver.maps.Event.addListener(marker, 'click', () => {
       window.open(infoWindowURL, '_blank');
     });
@@ -228,12 +201,11 @@
     function setLanguage(lang) {
       currentLang = lang;
       addressText.textContent = addressData[lang];
-      infowindow.setContent(makeInfowindowContent());
+      infowindow.setContent(`<div style="font-weight:bold; padding:10px; font-size:14px;">${addressData[currentLang]}</div>`);
       copyBtn.textContent = copyText[lang].button;
 
       btnKo.classList.remove('active', 'inactive');
       btnEn.classList.remove('active', 'inactive');
-
       if (lang === 'ko') {
         btnKo.classList.add('active');
         btnEn.classList.add('inactive');
@@ -243,16 +215,12 @@
       }
     }
 
-    function makeInfowindowContent() {
-      return `<div class="infowindow-content">${addressData[currentLang]}</div>`;
-    }
-
     function copyAddress() {
-      const text = addressData[currentLang].replace(/\n/g, ' ');
+      const textToCopy = addressData[currentLang].replace(/\n/g, ' ');
       const originalText = copyText[currentLang].button;
       const copiedText = copyText[currentLang].success;
 
-      navigator.clipboard.writeText(text).then(() => {
+      navigator.clipboard.writeText(textToCopy).then(() => {
         copyBtn.textContent = copiedText;
         setTimeout(() => {
           copyBtn.textContent = originalText;
@@ -260,7 +228,6 @@
       });
     }
 
-    // 초기 언어 설정
     setLanguage(currentLang);
   </script>
 </body>

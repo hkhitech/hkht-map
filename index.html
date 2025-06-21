@@ -17,11 +17,11 @@
 
     #map {
       width: 100%;
-      height: 85%;
+      height: 80%;
     }
 
     #language-toggle {
-      padding: 10px;
+      padding: 16px;
       text-align: right;
       background: #ffffff;
     }
@@ -29,9 +29,9 @@
     #language-toggle button {
       border: none;
       border-radius: 4px;
-      padding: 6px 12px;
+      padding: 12px 12px;
       margin-left: 8px;
-      font-size: 14px;
+      font-size: 16px;
       cursor: pointer;
     }
 
@@ -42,21 +42,21 @@
 
     #language-toggle button.inactive {
       background-color: #292A30;
-      color: #292A30;
+      color: #243BB2;
     }
 
     #address-display {
-      background-color: #243BB2;
-      color: #ffffff;
-      padding: 12px 16px;
+      background-color: #ffffff;
+      color: #243BB2;
+      padding: 24px 24px;
       text-align: center;
-      font-size: 16px;
+      font-size: 18px;
       line-height: 1.5;
       display: flex;
       justify-content: center;
       align-items: center;
       flex-wrap: wrap;
-      gap: 12px;
+      gap: 16px;
       white-space: normal;
     }
 
@@ -69,8 +69,8 @@
       color: #243BB2;
       border: none;
       border-radius: 4px;
-      padding: 5px 10px;
-      font-size: 14px;
+      padding: 12px 12px;
+      font-size: 64px;
       cursor: pointer;
     }
 
@@ -98,8 +98,8 @@
     const position = new naver.maps.LatLng(35.8383409525416, 128.502783192828);
 
     const addressData = {
-      ko: '대구광역시 달서구\n성서공단로35길 30\n(한국하이테크)',
-      en: '30, Seongseogongdan-ro 35-gil,\nDalseo-gu, Daegu,\nRepublic of Korea (HKHT)'
+      ko: '대구광역시 달서구, 성서공단로35길 30, (한국하이테크)',
+      en: '30, Seongseogongdan-ro 35-gil, Dalseo-gu, Daegu, Republic of Korea (HKHT)'
     };
 
     const copyText = {
@@ -164,7 +164,7 @@
     }
 
     function makeInfowindowContent(lang) {
-      return `<div style="padding:8px 12px; font-size:13px; border-radius:5px; white-space:pre-line; max-width:220px;">${addressData[lang]}</div>`;
+      return `<div style="padding:12px 12px; font-size:16px; border-radius:5px; white-space:pre-line; max-width:220px;">${addressData[lang]}</div>`;
     }
 
     function copyAddress() {

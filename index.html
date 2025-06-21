@@ -2,9 +2,10 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>HKHT Naver Map</title>
 
+  <!-- DM Sans 폰트 -->
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans&display=swap" rel="stylesheet" />
 
   <style>
@@ -13,39 +14,37 @@
       font-family: 'DM Sans', sans-serif;
       background: #fff;
       color: #292A30;
-      overflow: hidden; /* iframe 내 스크롤 방지 */
+      overflow: visible;
     }
 
     #container {
       display: flex;
       flex-direction: column;
-      height: 100vh;
+      height: 60vh;
       padding: 24px;
       box-sizing: border-box;
     }
 
     #language-toggle {
       text-align: right;
-      margin-bottom: 16px;
-      flex-shrink: 0;
+      margin-bottom: 12px;
     }
 
     #language-toggle button {
       border: none;
       border-radius: 16px;
-      padding: 12px 20px;
+      padding: 16px 16px;
       margin-left: 12px;
       font-size: 16px;
       cursor: pointer;
       color: #292A30;
       background-color: #D3D6E3;
       transition: background-color 0.3s ease;
-      user-select: none;
     }
 
     #language-toggle button.active {
-      background-color: #3752DB;
-      color: #fff;
+      background-color: #243BB2;
+      color: #FFFFFF;
     }
 
     #language-toggle button.inactive {
@@ -53,39 +52,37 @@
       color: #292A30;
     }
 
-    #language-toggle button:hover:not(.active) {
-      background-color: #bbbfc8;
+    /* 호버 시 배경색 변경 */
+    #language-toggle button:hover {
+      background-color: #3752DB;
+      color: #FFFFFF;
     }
 
     #map {
       flex-grow: 1;
-      min-height: 350px;
+      min-height: 320px;
       border-radius: 16px;
       overflow: hidden;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
 
     #address-display {
-      margin-top: 16px;
+      margin-top: 24px;
       display: flex;
       justify-content: center;
       align-items: center;
       gap: 24px;
       color: #292A30;
-      font-weight: 300;
+      font-weight: 200;  /* 얇은 글씨 */
       white-space: nowrap;
-      overflow-x: hidden;
-      user-select: text;
-      flex-shrink: 0;
+      overflow-x: auto;
     }
 
     #address-text {
-      font-weight: bold;
+      user-select: text;
       font-size: 18px;
       flex-shrink: 1;
       min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      font-weight: 200;
     }
 
     #copy-button {
@@ -93,47 +90,28 @@
       color: #56585E;
       border: none;
       border-radius: 16px;
-      padding: 8px 20px;
+      padding: 8px 16px;
       font-size: 16px;
       cursor: pointer;
       white-space: nowrap;
       user-select: none;
       flex-shrink: 0;
       transition: background-color 0.3s ease;
+      font-weight: 200;
     }
 
     #copy-button:hover {
       background-color: #c5c7ca;
     }
 
-    /* 인포윈도우 스타일 */
-    .infowindow-content {
-      padding: 4px 12px !important;
-      font-size: 16px !important;
-      border-radius: 50px !important;
-      background-color: white !important;
-      color: #292A30 !important;
-      cursor: pointer !important;
-      user-select: none !important;
-      white-space: nowrap !important;
-      font-weight: bold !important;
-      max-width: 220px !important;
-      box-sizing: border-box !important;
-      border: none !important;
-      box-shadow: none !important;
-      outline: none !important;
-      text-decoration: none !important;
-      display: inline-block !important;
-    }
-
-    /* 반응형 */
     @media (max-width: 768px) {
       #container {
+        height: 70vh;
         padding: 16px;
       }
 
       #language-toggle button {
-        padding: 10px 14px;
+        padding: 12px 12px;
         font-size: 14px;
         margin-left: 8px;
       }
@@ -147,7 +125,7 @@
       }
 
       #copy-button {
-        padding: 8px 14px;
+        padding: 8px 12px;
         font-size: 14px;
       }
     }
@@ -183,7 +161,6 @@
       en: { button: 'Copy', success: 'Copied!' }
     };
 
-    // 고정 URL (언어 구분 없이 동일 링크)
     const infoWindowURL = 'https://naver.me/xMnw7c4r';
 
     function detectLanguage() {
@@ -204,28 +181,27 @@
       title: 'HANKOOK HI-TECH'
     });
 
-    let infowindow = new naver.maps.InfoWindow({
-      content: makeInfowindowContent(),
-      disableAutoPan: false,
-      pixelOffset: new naver.maps.Point(0, -40),
+    // 인포윈도우 기본 스타일 사용, 주소 볼드체 적용
+    const infowindow = new naver.maps.InfoWindow({
+      content: `<div style="font-weight:light;">${addressData[currentLang]}</div>`
     });
 
     infowindow.open(map, marker);
 
-    // 클릭 시 새 창 열기 및 손가락 커서 적용
+    // 말풍선 클릭 시 새 창 열기
     naver.maps.Event.addListener(infowindow, 'domready', () => {
-      const iwContent = document.querySelector('.infowindow-content');
-      if (iwContent) {
-        iwContent.style.cursor = 'pointer';
-        iwContent.onclick = () => {
-          window.open(infoWindowURL, '_blank', 'noopener');
+      const iw = document.querySelector('.info_window');
+      if (iw) {
+        iw.style.cursor = 'pointer';
+        iw.onclick = () => {
+          window.open(infoWindowURL, '_blank');
         };
       }
     });
 
-    // 마커 클릭 시에도 새 창 열기
+    // 마커 클릭 시 새 창 열기
     naver.maps.Event.addListener(marker, 'click', () => {
-      window.open(infoWindowURL, '_blank', 'noopener');
+      window.open(infoWindowURL, '_blank');
     });
 
     const addressText = document.getElementById('address-text');
@@ -236,7 +212,7 @@
     function setLanguage(lang) {
       currentLang = lang;
       addressText.textContent = addressData[lang];
-      infowindow.setContent(makeInfowindowContent());
+      infowindow.setContent(`<div style="font-weight:light;">${addressData[lang]}</div>`);
       copyBtn.textContent = copyText[lang].button;
 
       btnKo.classList.remove('active', 'inactive');
@@ -249,10 +225,6 @@
         btnEn.classList.add('active');
         btnKo.classList.add('inactive');
       }
-    }
-
-    function makeInfowindowContent() {
-      return `<div class="infowindow-content">${addressData[currentLang]}</div>`;
     }
 
     function copyAddress() {

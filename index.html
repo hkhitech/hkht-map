@@ -5,25 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <title>HKHT Naver Map</title>
 
-  <!-- 폰트 불러오기 -->
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans&display=swap" rel="stylesheet" />
 
   <style>
-    /* 기본 스타일 초기화 및 폰트 지정 */
     html, body {
-      margin: 0; 
-      padding: 0; 
-      height: 100%;
+      margin: 0; padding: 0; height: 100%;
       font-family: 'DM Sans', sans-serif;
       background: #fff;
       color: #292A30;
-      overflow: hidden; /* iframe 내에서 스크롤 방지 */
+      overflow: hidden; /* iframe 내 스크롤 방지 */
     }
 
     #container {
       display: flex;
       flex-direction: column;
-      height: 100vh; /* iframe 안에서 꽉 차게 */
+      height: 100vh;
       padding: 24px;
       box-sizing: border-box;
     }
@@ -48,8 +44,8 @@
     }
 
     #language-toggle button.active {
-      background-color: #243BB2;
-      color: #FFFFFF;
+      background-color: #3752DB;
+      color: #fff;
     }
 
     #language-toggle button.inactive {
@@ -63,14 +59,14 @@
 
     #map {
       flex-grow: 1;
-      min-height: 320px;
+      min-height: 350px;
       border-radius: 16px;
       overflow: hidden;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
 
     #address-display {
-      margin-top: 24px;
+      margin-top: 16px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -78,7 +74,7 @@
       color: #292A30;
       font-weight: 300;
       white-space: nowrap;
-      overflow-x: auto;
+      overflow-x: hidden;
       user-select: text;
       flex-shrink: 0;
     }
@@ -119,7 +115,8 @@
       color: #292A30 !important;
       cursor: pointer !important;
       user-select: none !important;
-      white-space: pre-line !important;
+      white-space: nowrap !important;
+      font-weight: bold !important;
       max-width: 220px !important;
       box-sizing: border-box !important;
       border: none !important;
@@ -129,7 +126,7 @@
       display: inline-block !important;
     }
 
-    /* 반응형: 모바일 뷰포트 */
+    /* 반응형 */
     @media (max-width: 768px) {
       #container {
         padding: 16px;
@@ -156,7 +153,6 @@
     }
   </style>
 
-  <!-- 네이버 지도 API -->
   <script src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=zj8vyjsrf7"></script>
 </head>
 <body>
@@ -178,8 +174,8 @@
     const position = new naver.maps.LatLng(35.8383409525416, 128.502783192828);
 
     const addressData = {
-      ko: '대구광역시 달서구 성서공단로35길 30 (한국하이테크)',
-      en: '30, Seongseogongdan-ro 35-gil, Dalseo-gu, Daegu, Republic of Korea (HKHT)'
+      ko: '대구광역시 달서구 성서공단로35길 30',
+      en: '30, Seongseogongdan-ro 35-gil, Dalseo-gu, Daegu, Republic of Korea'
     };
 
     const copyText = {
@@ -187,7 +183,7 @@
       en: { button: 'Copy', success: 'Copied!' }
     };
 
-    // 네이버 지도 링크
+    // 고정 URL (언어 구분 없이 동일 링크)
     const infoWindowURL = 'https://naver.me/xMnw7c4r';
 
     function detectLanguage() {
@@ -197,59 +193,51 @@
 
     let currentLang = detectLanguage();
 
-    // 지도 생성
     const map = new naver.maps.Map('map', {
       center: position,
       zoom: 16
     });
 
-    // 마커 생성
     const marker = new naver.maps.Marker({
       position: position,
       map: map,
       title: 'HANKOOK HI-TECH'
     });
 
-    // 인포윈도우 생성 (주소는 볼드체)
     let infowindow = new naver.maps.InfoWindow({
-      content: `<div class="infowindow-content"><b>${addressData[currentLang]}</b></div>`,
-      backgroundColor: 'transparent',
-      borderWidth: 0,
-      anchorSize: new naver.maps.Size(30, 30),
-      anchorSkew: true,
-      pixelOffset: new naver.maps.Point(0, -30)
+      content: makeInfowindowContent(),
+      disableAutoPan: false,
+      pixelOffset: new naver.maps.Point(0, -40),
     });
 
     infowindow.open(map, marker);
 
-    // 인포윈도우 클릭 시 새 창 열기 (커서도 손가락으로 변경)
+    // 클릭 시 새 창 열기 및 손가락 커서 적용
     naver.maps.Event.addListener(infowindow, 'domready', () => {
       const iwContent = document.querySelector('.infowindow-content');
       if (iwContent) {
         iwContent.style.cursor = 'pointer';
         iwContent.onclick = () => {
-          window.open(infoWindowURL, '_blank');
+          window.open(infoWindowURL, '_blank', 'noopener');
         };
       }
     });
 
     // 마커 클릭 시에도 새 창 열기
     naver.maps.Event.addListener(marker, 'click', () => {
-      window.open(infoWindowURL, '_blank');
+      window.open(infoWindowURL, '_blank', 'noopener');
     });
 
-    // 버튼 및 주소 텍스트 요소
     const addressText = document.getElementById('address-text');
     const copyBtn = document.getElementById('copy-button');
     const btnKo = document.getElementById('btn-ko');
     const btnEn = document.getElementById('btn-en');
 
-    // 언어 변경 함수
     function setLanguage(lang) {
       currentLang = lang;
       addressText.textContent = addressData[lang];
+      infowindow.setContent(makeInfowindowContent());
       copyBtn.textContent = copyText[lang].button;
-      infowindow.setContent(`<div class="infowindow-content"><b>${addressData[lang]}</b></div>`);
 
       btnKo.classList.remove('active', 'inactive');
       btnEn.classList.remove('active', 'inactive');
@@ -263,7 +251,10 @@
       }
     }
 
-    // 주소 복사 함수
+    function makeInfowindowContent() {
+      return `<div class="infowindow-content">${addressData[currentLang]}</div>`;
+    }
+
     function copyAddress() {
       const text = addressData[currentLang].replace(/\n/g, ' ');
       const originalText = copyText[currentLang].button;
@@ -277,7 +268,7 @@
       });
     }
 
-    // 초기 언어 설정 실행
+    // 초기 언어 설정
     setLanguage(currentLang);
   </script>
 </body>

@@ -14,10 +14,9 @@
       font-family: 'DM Sans', sans-serif;
       background: #fff;
       color: #292A30;
-      overflow: visible; /* 스크롤 여부 */
+      overflow: visible;
     }
 
-    /* 적당한 여백을 위해 body 내부 전체 컨테이너 설정 */
     #container {
       display: flex;
       flex-direction: column;
@@ -40,6 +39,7 @@
       cursor: pointer;
       color: #292A30;
       background-color: #D3D6E3;
+      transition: background-color 0.3s ease;
     }
 
     #language-toggle button.active {
@@ -50,6 +50,10 @@
     #language-toggle button.inactive {
       background-color: #D3D6E3;
       color: #292A30;
+    }
+
+    #language-toggle button:hover {
+      background-color: #bbbfc8;
     }
 
     #map {
@@ -65,17 +69,20 @@
       justify-content: center;
       align-items: center;
       gap: 24px;
-      white-space: nowrap; /* 줄바꿈 없이 한 줄 표시 */
       color: #292A30;
       font-size: 18px;
       font-weight: 300;
+      flex-wrap: wrap; /* 줄 바꿈 허용 */
     }
 
     #address-text {
       user-select: text;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 60vw;
+      /* 줄 바꿈 허용 */
+      white-space: normal;
+      overflow-wrap: break-word;
+      flex-grow: 1;       /* 남은 공간 최대한 차지 */
+      flex-shrink: 1;     /* 축소 가능 */
+      min-width: 0;       /* flex item 축소 허용 */
     }
 
     #copy-button {
@@ -89,6 +96,7 @@
       white-space: nowrap;
       user-select: none;
       transition: background-color 0.3s ease;
+      flex-shrink: 0; /* 버튼은 축소 안되도록 */
     }
 
     #copy-button:hover {
@@ -97,20 +105,42 @@
 
     /* 인포윈도우 스타일 */
     .infowindow-content {
-      padding: 4px 12px; /* 타이트한 여백 */
+      padding: 4px 12px;
       font-size: 16px;
       border-radius: 50px;
       background-color: white;
       color: #292A30;
-      cursor: pointer; /* 손가락 모양 */
+      cursor: pointer;
       user-select: none;
       white-space: pre-line;
       max-width: 220px;
       box-sizing: border-box;
-      /* 테두리 없음 */
       border: none;
       text-decoration: none;
       display: inline-block;
+    }
+
+    @media (max-width: 768px) {
+      #container {
+        height: 60vh;
+        padding: 16px;
+      }
+
+      #language-toggle button {
+        padding: 12px 12px;
+        font-size: 14px;
+        margin-left: 8px;
+      }
+
+      #address-display {
+        gap: 12px;
+        font-size: 16px;
+      }
+
+      #copy-button {
+        padding: 12px 12px;
+        font-size: 14px;
+      }
     }
   </style>
 
@@ -144,7 +174,6 @@
       en: { button: 'Copy', success: 'Copied!' }
     };
 
-    // 고정 URL로 설정 (언어 구분 없이 동일 URL)
     const infoWindowURL = 'https://map.naver.com/p/entry/place/12845535?c=15.00,0,0,0,dh&placePath=/home?from=map&fromPanelNum=1&additionalHeight=76&timestamp=202506220443&locale=ko&svcName=map_pcv5';
 
     function detectLanguage() {
@@ -165,14 +194,12 @@
       title: 'HANKOOK HI-TECH'
     });
 
-    // 인포윈도우를 클릭 가능한 div로 구성
     let infowindow = new naver.maps.InfoWindow({
       content: makeInfowindowContent()
     });
 
     infowindow.open(map, marker);
 
-    // 인포윈도우 클릭 시 새 창 열기
     naver.maps.Event.addListener(infowindow, 'domready', () => {
       const iwContent = document.querySelector('.infowindow-content');
       if (iwContent) {
@@ -182,7 +209,6 @@
       }
     });
 
-    // 마커 클릭시도 새 창 오픈 (선택사항)
     naver.maps.Event.addListener(marker, "click", function () {
       window.open(infoWindowURL, "_blank");
     });
@@ -195,7 +221,7 @@
     function setLanguage(lang) {
       currentLang = lang;
 
-      addressText.textContent = addressData[lang];  // 줄바꿈 없이 한줄 텍스트
+      addressText.textContent = addressData[lang];
       infowindow.setContent(makeInfowindowContent());
       copyBtn.textContent = copyText[lang].button;
 

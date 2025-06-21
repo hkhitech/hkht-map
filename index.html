@@ -20,7 +20,7 @@
     #container {
       display: flex;
       flex-direction: column;
-      min-height: 600px;
+      min-height: 700px;
       padding: 24px;
       box-sizing: border-box;
     }
@@ -105,7 +105,7 @@
     @media (max-width: 768px) {
       #container {
         padding: 16px;
-        min-height: 600px;
+        min-height: 700px;
       }
 
       #language-toggle button {
@@ -181,7 +181,7 @@
     });
 
     const infoWindow = new naver.maps.InfoWindow({
-      content: `<div style="
+      content: `<a href="${mapLink}" target="_blank" style="
         font-weight: 400;
         font-size: 16px;
         white-space: normal;
@@ -189,23 +189,16 @@
         max-width: 240px;
         line-height: 1.4;
         padding: 4px 12px;
-      ">${addressData[currentLang]}</div>`
+        display: inline-block;
+        color: #292A30;
+        text-decoration: none;
+      ">${addressData[currentLang]}</a>`
     });
 
     infoWindow.open(map, marker);
 
     naver.maps.Event.addListener(marker, "click", () => {
       window.open(mapLink, "_blank");
-    });
-
-    naver.maps.Event.addListener(infoWindow, "domready", () => {
-      const iw = document.querySelector(".ncp_infowindow");
-      if (iw) {
-        iw.style.cursor = "pointer";
-        iw.onclick = () => {
-          window.open(mapLink, "_blank");
-        };
-      }
     });
 
     const addressText = document.getElementById('address-text');
@@ -216,7 +209,7 @@
     function setLanguage(lang) {
       currentLang = lang;
       addressText.textContent = addressData[lang];
-      infoWindow.setContent(`<div style="
+      infoWindow.setContent(`<a href="${mapLink}" target="_blank" style="
         font-weight: 400;
         font-size: 16px;
         white-space: normal;
@@ -224,7 +217,10 @@
         max-width: 240px;
         line-height: 1.4;
         padding: 4px 12px;
-      ">${addressData[lang]}</div>`);
+        display: inline-block;
+        color: #292A30;
+        text-decoration: none;
+      ">${addressData[lang]}</a>`);
       copyBtn.textContent = copyText[lang].button;
 
       btnKo.classList.remove('active', 'inactive');

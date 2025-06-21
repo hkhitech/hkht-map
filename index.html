@@ -2,46 +2,49 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <title>HKHT Naver Map</title>
 
-  <!-- DM Sans 폰트 -->
+  <!-- 폰트 불러오기 -->
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans&display=swap" rel="stylesheet" />
 
-  <script src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=zj8vyjsrf7"></script>
-
   <style>
+    /* 기본 스타일 초기화 및 폰트 지정 */
     html, body {
-      margin: 0; padding: 0; height: 100%;
+      margin: 0; 
+      padding: 0; 
+      height: 100%;
       font-family: 'DM Sans', sans-serif;
       background: #fff;
       color: #292A30;
-      overflow: visible;
+      overflow: hidden; /* iframe 내에서 스크롤 방지 */
     }
 
     #container {
       display: flex;
       flex-direction: column;
-      height: 60vh;
+      height: 100vh; /* iframe 안에서 꽉 차게 */
       padding: 24px;
       box-sizing: border-box;
     }
 
     #language-toggle {
       text-align: right;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
+      flex-shrink: 0;
     }
 
     #language-toggle button {
       border: none;
       border-radius: 16px;
-      padding: 16px 16px;
+      padding: 12px 20px;
       margin-left: 12px;
       font-size: 16px;
       cursor: pointer;
       color: #292A30;
       background-color: #D3D6E3;
       transition: background-color 0.3s ease;
+      user-select: none;
     }
 
     #language-toggle button.active {
@@ -54,7 +57,7 @@
       color: #292A30;
     }
 
-    #language-toggle button:hover {
+    #language-toggle button:hover:not(.active) {
       background-color: #bbbfc8;
     }
 
@@ -63,6 +66,7 @@
       min-height: 320px;
       border-radius: 16px;
       overflow: hidden;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
 
     #address-display {
@@ -74,11 +78,13 @@
       color: #292A30;
       font-weight: 300;
       white-space: nowrap;
-      overflow-x: hidden;
+      overflow-x: auto;
+      user-select: text;
+      flex-shrink: 0;
     }
 
     #address-text {
-      user-select: text;
+      font-weight: bold;
       font-size: 18px;
       flex-shrink: 1;
       min-width: 0;
@@ -91,7 +97,7 @@
       color: #56585E;
       border: none;
       border-radius: 16px;
-      padding: 8px 16px;
+      padding: 8px 20px;
       font-size: 16px;
       cursor: pointer;
       white-space: nowrap;
@@ -104,14 +110,33 @@
       background-color: #c5c7ca;
     }
 
+    /* 인포윈도우 스타일 */
+    .infowindow-content {
+      padding: 4px 12px !important;
+      font-size: 16px !important;
+      border-radius: 50px !important;
+      background-color: white !important;
+      color: #292A30 !important;
+      cursor: pointer !important;
+      user-select: none !important;
+      white-space: pre-line !important;
+      max-width: 220px !important;
+      box-sizing: border-box !important;
+      border: none !important;
+      box-shadow: none !important;
+      outline: none !important;
+      text-decoration: none !important;
+      display: inline-block !important;
+    }
+
+    /* 반응형: 모바일 뷰포트 */
     @media (max-width: 768px) {
       #container {
-        height: 70vh;
         padding: 16px;
       }
 
       #language-toggle button {
-        padding: 12px 12px;
+        padding: 10px 14px;
         font-size: 14px;
         margin-left: 8px;
       }
@@ -125,11 +150,14 @@
       }
 
       #copy-button {
-        padding: 8px 12px;
+        padding: 8px 14px;
         font-size: 14px;
       }
     }
   </style>
+
+  <!-- 네이버 지도 API -->
+  <script src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=zj8vyjsrf7"></script>
 </head>
 <body>
   <div id="container">
@@ -159,6 +187,7 @@
       en: { button: 'Copy', success: 'Copied!' }
     };
 
+    // 네이버 지도 링크
     const infoWindowURL = 'https://naver.me/xMnw7c4r';
 
     function detectLanguage() {
@@ -168,44 +197,63 @@
 
     let currentLang = detectLanguage();
 
+    // 지도 생성
     const map = new naver.maps.Map('map', {
       center: position,
       zoom: 16
     });
 
+    // 마커 생성
     const marker = new naver.maps.Marker({
       position: position,
       map: map,
-      title: 'HANKOOK HI-TECH',
-      cursor: 'pointer' // 마커 위 커서 손가락으로
+      title: 'HANKOOK HI-TECH'
     });
 
     // 인포윈도우 생성 (주소는 볼드체)
-    const infowindow = new naver.maps.InfoWindow({
-      content: `<div style="font-weight:bold; padding:10px; font-size:14px;">${addressData[currentLang]}</div>`
+    let infowindow = new naver.maps.InfoWindow({
+      content: `<div class="infowindow-content"><b>${addressData[currentLang]}</b></div>`,
+      backgroundColor: 'transparent',
+      borderWidth: 0,
+      anchorSize: new naver.maps.Size(30, 30),
+      anchorSkew: true,
+      pixelOffset: new naver.maps.Point(0, -30)
     });
 
-    // 인포윈도우 열기
     infowindow.open(map, marker);
 
-    // 마커 클릭 시 새 창으로 네이버 지도 주소 열기
+    // 인포윈도우 클릭 시 새 창 열기 (커서도 손가락으로 변경)
+    naver.maps.Event.addListener(infowindow, 'domready', () => {
+      const iwContent = document.querySelector('.infowindow-content');
+      if (iwContent) {
+        iwContent.style.cursor = 'pointer';
+        iwContent.onclick = () => {
+          window.open(infoWindowURL, '_blank');
+        };
+      }
+    });
+
+    // 마커 클릭 시에도 새 창 열기
     naver.maps.Event.addListener(marker, 'click', () => {
       window.open(infoWindowURL, '_blank');
     });
 
+    // 버튼 및 주소 텍스트 요소
     const addressText = document.getElementById('address-text');
     const copyBtn = document.getElementById('copy-button');
     const btnKo = document.getElementById('btn-ko');
     const btnEn = document.getElementById('btn-en');
 
+    // 언어 변경 함수
     function setLanguage(lang) {
       currentLang = lang;
       addressText.textContent = addressData[lang];
-      infowindow.setContent(`<div style="font-weight:bold; padding:10px; font-size:14px;">${addressData[currentLang]}</div>`);
       copyBtn.textContent = copyText[lang].button;
+      infowindow.setContent(`<div class="infowindow-content"><b>${addressData[lang]}</b></div>`);
 
       btnKo.classList.remove('active', 'inactive');
       btnEn.classList.remove('active', 'inactive');
+
       if (lang === 'ko') {
         btnKo.classList.add('active');
         btnEn.classList.add('inactive');
@@ -215,12 +263,13 @@
       }
     }
 
+    // 주소 복사 함수
     function copyAddress() {
-      const textToCopy = addressData[currentLang].replace(/\n/g, ' ');
+      const text = addressData[currentLang].replace(/\n/g, ' ');
       const originalText = copyText[currentLang].button;
       const copiedText = copyText[currentLang].success;
 
-      navigator.clipboard.writeText(textToCopy).then(() => {
+      navigator.clipboard.writeText(text).then(() => {
         copyBtn.textContent = copiedText;
         setTimeout(() => {
           copyBtn.textContent = originalText;
@@ -228,6 +277,7 @@
       });
     }
 
+    // 초기 언어 설정 실행
     setLanguage(currentLang);
   </script>
 </body>

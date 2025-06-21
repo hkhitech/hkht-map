@@ -15,24 +15,21 @@
       background: #fff;
       color: #292A30;
       overflow: visible;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
     }
 
     #container {
       display: flex;
       flex-direction: column;
-      height: 60vh; /* 충분히 높여 하단 UI 보이도록 */
+      height: 60vh;
       padding: 24px;
       box-sizing: border-box;
-      min-height: 400px; /* 최소 높이 */
     }
 
-    /* 언어 선택 버튼 */
     #language-toggle {
       text-align: right;
       margin-bottom: 12px;
     }
+
     #language-toggle button {
       border: none;
       border-radius: 16px;
@@ -41,31 +38,31 @@
       font-size: 16px;
       cursor: pointer;
       color: #292A30;
-      font-weight: 400;
       background-color: #D3D6E3;
       transition: background-color 0.3s ease;
     }
+
     #language-toggle button.active {
       background-color: #243BB2;
       color: #FFFFFF;
     }
+
     #language-toggle button.inactive {
       background-color: #D3D6E3;
       color: #292A30;
     }
+
     #language-toggle button:hover {
       background-color: #bbbfc8;
     }
 
-    /* 지도 영역 */
     #map {
       flex-grow: 1;
+      min-height: 320px;
       border-radius: 16px;
       overflow: hidden;
-      min-height: 320px;
     }
 
-    /* 주소 및 복사 버튼 영역 */
     #address-display {
       margin-top: 24px;
       display: flex;
@@ -73,20 +70,16 @@
       align-items: center;
       gap: 24px;
       color: #292A30;
-      font-weight: 200;
-      flex-wrap: nowrap;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      user-select: none;
+      font-weight: 300;
+      white-space: nowrap; /* 줄바꿈 없이 한 줄 표시 */
+      overflow-x: auto; /* 주소 길어도 스크롤 없이 컨테이너 내에서 자동 줄임 */
     }
 
     #address-text {
-      white-space: nowrap;
-      font-size: 18px;
-      font-weight: 200;
-      flex-shrink: 0;
-      max-width: 100vw;
       user-select: text;
+      font-size: 18px;
+      flex-shrink: 1;
+      min-width: 0;
     }
 
     #copy-button {
@@ -96,22 +89,21 @@
       border-radius: 16px;
       padding: 8px 16px;
       font-size: 16px;
-      font-weight: 300;
       cursor: pointer;
       white-space: nowrap;
       user-select: none;
       flex-shrink: 0;
       transition: background-color 0.3s ease;
     }
+
     #copy-button:hover {
       background-color: #c5c7ca;
     }
 
-    /* 인포윈도우 내용 스타일 */
+    /* 인포윈도우 스타일 완전 커스텀 */
     .infowindow-content {
-      padding: 4px 12px !important; /* 여백 작게 */
+      padding: 4px 12px !important;
       font-size: 16px !important;
-      font-weight: 200;
       border-radius: 50px !important;
       background-color: white !important;
       color: #292A30 !important;
@@ -120,11 +112,11 @@
       white-space: pre-line !important;
       max-width: 220px !important;
       box-sizing: border-box !important;
-      border: none !important; /* 테두리 완전 제거 */
+      border: none !important;
+      box-shadow: none !important;
       outline: none !important;
       text-decoration: none !important;
       display: inline-block !important;
-      box-shadow: none !important; /* 그림자 제거 */
     }
 
     /* 반응형 */
@@ -133,19 +125,23 @@
         height: 70vh;
         padding: 16px;
       }
+
       #language-toggle button {
         padding: 12px 12px;
         font-size: 14px;
         margin-left: 8px;
       }
+
       #address-display {
         gap: 16px;
       }
+
       #address-text {
         font-size: 14px;
       }
+
       #copy-button {
-        padding: 12px 16px;
+        padding: 8px 12px;
         font-size: 14px;
       }
     }
@@ -155,15 +151,15 @@
 </head>
 <body>
   <div id="container">
-    <div id="language-toggle" role="region" aria-label="언어 선택">
+    <div id="language-toggle">
       <button id="btn-ko" onclick="setLanguage('ko')">한국어</button>
       <button id="btn-en" onclick="setLanguage('en')">English</button>
     </div>
 
-    <div id="map" role="region" aria-label="네이버 지도"></div>
+    <div id="map"></div>
 
-    <div id="address-display" role="region" aria-label="주소 및 복사 버튼">
-      <span id="address-text" tabindex="0">Loading address...</span>
+    <div id="address-display">
+      <span id="address-text">Loading address...</span>
       <button id="copy-button" onclick="copyAddress()">복사</button>
     </div>
   </div>
@@ -181,6 +177,7 @@
       en: { button: 'Copy', success: 'Copied!' }
     };
 
+    // 고정 URL (언어 구분 없이 동일 링크)
     const infoWindowURL = 'https://naver.me/xMnw7c4r';
 
     function detectLanguage() {
@@ -207,7 +204,7 @@
 
     infowindow.open(map, marker);
 
-    // 인포윈도우 domready 이벤트에서 클릭 이벤트 바인딩 (완전한 새창 열림 보장)
+    // 클릭 시 새 창 열기 및 손가락 커서 적용
     naver.maps.Event.addListener(infowindow, 'domready', () => {
       const iwContent = document.querySelector('.infowindow-content');
       if (iwContent) {
@@ -218,7 +215,7 @@
       }
     });
 
-    // 마커 클릭 시 새창 열림
+    // 마커 클릭 시에도 새 창 열기
     naver.maps.Event.addListener(marker, 'click', () => {
       window.open(infoWindowURL, '_blank');
     });
@@ -230,13 +227,13 @@
 
     function setLanguage(lang) {
       currentLang = lang;
-
       addressText.textContent = addressData[lang];
       infowindow.setContent(makeInfowindowContent());
       copyBtn.textContent = copyText[lang].button;
 
       btnKo.classList.remove('active', 'inactive');
       btnEn.classList.remove('active', 'inactive');
+
       if (lang === 'ko') {
         btnKo.classList.add('active');
         btnEn.classList.add('inactive');
@@ -263,6 +260,7 @@
       });
     }
 
+    // 초기 언어 설정
     setLanguage(currentLang);
   </script>
 </body>

@@ -83,11 +83,11 @@
       user-select: text;
       font-size: 16px;
       font-weight: 100;
-      white-space: normal;  /* 줄바꿈 허용 */
-      overflow: visible;    /* 잘림 없게 */
-      text-overflow: unset; /* 생략 부호 제거 */
+      white-space: normal;
+      overflow: visible;
+      text-overflow: unset;
       max-width: 60vw;
-      word-break: break-word; /* 단어 단위 줄바꿈 허용 */
+      word-break: break-word;
     }
 
     #copy-button {
@@ -111,7 +111,7 @@
     @media (max-width: 768px) {
       #container {
         padding: 16px;
-        min-height: 700px;
+        min-height: auto;
       }
 
       #language-toggle button {
@@ -132,6 +132,14 @@
       #copy-button {
         padding: 8px 12px;
         font-size: 14px;
+      }
+
+      /* 모바일에서 지도를 정사각형으로 만듦 */
+      #map {
+        /* 가로 너비에서 좌우 패딩 32px(16*2)를 뺀 값으로 높이 고정 */
+        height: calc(100vw - 32px);
+        min-height: unset;
+        border-radius: 16px;
       }
     }
   </style>

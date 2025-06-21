@@ -10,22 +10,25 @@
 
   <style>
     html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
+      margin: 0; padding: 0; height: 100%;
       font-family: 'DM Sans', sans-serif;
+      background: #fff;
+      color: #292A30;
+      overflow: hidden; /* 스크롤 방지 */
     }
 
-    #map {
-      width: 100%;
-      height: 80vh;
-      min-height: 400px;
+    /* 적당한 여백을 위해 body 내부 전체 컨테이너 설정 */
+    #container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      padding: 16px;
+      box-sizing: border-box;
     }
 
     #language-toggle {
-      padding: 16px;
       text-align: right;
-      background: #ffffff;
+      margin-bottom: 8px;
     }
 
     #language-toggle button {
@@ -35,6 +38,8 @@
       margin-left: 8px;
       font-size: 16px;
       cursor: pointer;
+      color: #292A30;
+      background-color: #D3D6E3;
     }
 
     #language-toggle button.active {
@@ -44,81 +49,94 @@
 
     #language-toggle button.inactive {
       background-color: #D3D6E3;
-      color: #243BB2;
+      color: #292A30;
+    }
+
+    #map {
+      flex-grow: 1;
+      min-height: 350px;
+      border-radius: 8px;
+      overflow: hidden;
     }
 
     #address-display {
-      background-color: #ffffff;
-      color: #243BB2;
-      padding: 24px;
-      text-align: center;
-      font-size: 18px;
-      line-height: 1.5;
+      margin-top: 12px;
       display: flex;
       justify-content: center;
       align-items: center;
-      flex-wrap: wrap;
-      gap: 16px;
-      white-space: normal;
+      gap: 12px;
+      white-space: nowrap; /* 줄바꿈 없이 한 줄 표시 */
+      color: #292A30;
+      font-size: 18px;
+      font-weight: 500;
     }
 
     #address-text {
-      max-width: 100%;
-      word-break: keep-all;
-      white-space: pre-line;
+      user-select: text;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 80vw;
     }
 
     #copy-button {
-      background: #243BB2;
-      color: #ffffff;
+      background-color: #DCDDE0;
+      color: #56585E;
       border: none;
       border-radius: 4px;
       padding: 8px 16px;
       font-size: 16px;
       cursor: pointer;
       white-space: nowrap;
+      user-select: none;
+      transition: background-color 0.3s ease;
     }
 
     #copy-button:hover {
-      background: #1e30a5;
+      background-color: #c5c7ca;
     }
 
-    /* 모바일 대응 */
-    @media (max-width: 480px) {
-      #address-display {
-        flex-direction: column;
-      }
-      #copy-button {
-        width: 100%;
-      }
-      #address-text {
-        max-width: 100%;
-      }
+    /* 인포윈도우 스타일 */
+    .infowindow-content {
+      padding: 4px 12px; /* 타이트한 여백 */
+      font-size: 16px;
+      border-radius: 50px;
+      background-color: white;
+      color: #292A30;
+      cursor: pointer; /* 손가락 모양 */
+      user-select: none;
+      white-space: pre-line;
+      max-width: 220px;
+      box-sizing: border-box;
+      /* 테두리 없음 */
+      border: none;
+      text-decoration: none;
+      display: inline-block;
     }
   </style>
 
-  <!-- 네이버 지도 API -->
   <script src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=zj8vyjsrf7"></script>
 </head>
 <body>
-  <div id="language-toggle">
-    <button id="btn-ko" onclick="setLanguage('ko')">한국어</button>
-    <button id="btn-en" onclick="setLanguage('en')">English</button>
-  </div>
+  <div id="container">
+    <div id="language-toggle">
+      <button id="btn-ko" onclick="setLanguage('ko')">한국어</button>
+      <button id="btn-en" onclick="setLanguage('en')">English</button>
+    </div>
 
-  <div id="map"></div>
+    <div id="map"></div>
 
-  <div id="address-display">
-    <span id="address-text">Loading address...</span>
-    <button id="copy-button" onclick="copyAddress()">복사</button>
+    <div id="address-display">
+      <span id="address-text">Loading address...</span>
+      <button id="copy-button" onclick="copyAddress()">복사</button>
+    </div>
   </div>
 
   <script>
     const position = new naver.maps.LatLng(35.8383409525416, 128.502783192828);
 
     const addressData = {
-      ko: '대구광역시 달서구\n성서공단로35길 30\n(한국하이테크)',
-      en: '30, Seongseogongdan-ro 35-gil,\nDalseo-gu, Daegu,\nRepublic of Korea (HKHT)'
+      ko: '대구광역시 달서구 성서공단로35길 30 (한국하이테크)',
+      en: '30, Seongseogongdan-ro 35-gil, Dalseo-gu, Daegu, Republic of Korea (HKHT)'
     };
 
     const copyText = {
@@ -126,10 +144,8 @@
       en: { button: 'Copy', success: 'Copied!' }
     };
 
-    const naverMapSearchURL = {
-      ko: 'https://map.naver.com/p/search/대구광역시 달서구 성서공단로35길 30',
-      en: 'https://map.naver.com/p/search/30, Seongseogongdan-ro 35-gil, Dalseo-gu, Daegu'
-    };
+    // 고정 URL로 설정 (언어 구분 없이 동일 URL)
+    const infoWindowURL = 'https://map.naver.com/p/entry/place/12845535?c=15.00,0,0,0,dh&placePath=/home?from=map&fromPanelNum=1&additionalHeight=76&timestamp=202506220443&locale=ko&svcName=map_pcv5';
 
     function detectLanguage() {
       const lang = navigator.language || navigator.userLanguage;
@@ -149,14 +165,26 @@
       title: 'HANKOOK HI-TECH'
     });
 
+    // 인포윈도우를 클릭 가능한 div로 구성
     let infowindow = new naver.maps.InfoWindow({
-      content: makeInfowindowContent(currentLang)
+      content: makeInfowindowContent()
     });
 
     infowindow.open(map, marker);
 
+    // 인포윈도우 클릭 시 새 창 열기
+    naver.maps.Event.addListener(infowindow, 'domready', () => {
+      const iwContent = document.querySelector('.infowindow-content');
+      if (iwContent) {
+        iwContent.onclick = () => {
+          window.open(infoWindowURL, '_blank');
+        };
+      }
+    });
+
+    // 마커 클릭시도 새 창 오픈 (선택사항)
     naver.maps.Event.addListener(marker, "click", function () {
-      window.open(naverMapSearchURL[currentLang], "_blank");
+      window.open(infoWindowURL, "_blank");
     });
 
     const addressText = document.getElementById('address-text');
@@ -167,8 +195,8 @@
     function setLanguage(lang) {
       currentLang = lang;
 
-      addressText.innerText = addressData[lang];
-      infowindow.setContent(makeInfowindowContent(lang));
+      addressText.textContent = addressData[lang];  // 줄바꿈 없이 한줄 텍스트
+      infowindow.setContent(makeInfowindowContent());
       copyBtn.textContent = copyText[lang].button;
 
       btnKo.classList.remove('active', 'inactive');
@@ -182,19 +210,13 @@
       }
     }
 
-    function makeInfowindowContent(lang) {
-      const url = naverMapSearchURL[lang];
+    function makeInfowindowContent() {
       return `
-        <div style="padding:12px 12px; font-size:16px; border-radius:5px; white-space:pre-line; max-width:220px;">
-          <a href="${url}" target="_blank" style="color:#243BB2; text-decoration:none; display:block;">
-            ${addressData[lang]}
-          </a>
-        </div>
+        <div class="infowindow-content">${addressData[currentLang]}</div>
       `;
     }
 
     function copyAddress() {
-      // 줄바꿈 대신 공백으로 바꿔서 한 줄로 복사
       const text = addressData[currentLang].replace(/\n/g, ' ');
       const originalText = copyText[currentLang].button;
       const copiedText = copyText[currentLang].success;

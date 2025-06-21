@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>HKHT Naver Map</title>
 
-  <!-- DM Sans 폰트 -->
+  <!-- DM Sans Font -->
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans&display=swap" rel="stylesheet" />
 
   <style>
@@ -22,8 +22,6 @@
       min-height: 700px;
       padding: 24px;
       box-sizing: border-box;
-      max-width: 900px;
-      margin: 0 auto;
     }
 
     #language-toggle {
@@ -53,12 +51,10 @@
       color: #292A30;
     }
 
-    /* inactive 버튼 호버 색상 (조금 더 어두운 회색) */
     #language-toggle button.inactive:hover {
-      background-color: #a0a3b0;
+      background-color: #b6b8c1;
     }
 
-    /* active 버튼 호버 색상 */
     #language-toggle button.active:hover {
       background-color: #3752DB;
     }
@@ -88,7 +84,8 @@
       white-space: normal; /* 줄바꿈 허용 */
       overflow-wrap: break-word;
       max-width: 60vw;
-      min-width: 150px;
+      flex-shrink: 1;
+      min-width: 0;
     }
 
     #copy-button {
@@ -112,7 +109,7 @@
     @media (max-width: 768px) {
       #container {
         padding: 16px;
-        min-height: 500px;
+        min-height: 600px;
       }
 
       #language-toggle button {
@@ -134,9 +131,9 @@
         padding: 8px 12px;
         font-size: 14px;
       }
-      
+
       #map {
-        min-height: 320px;
+        min-height: 300px;
       }
     }
   </style>
@@ -193,10 +190,10 @@
 
     const infoWindow = new naver.maps.InfoWindow({
       content: `<a href="${mapLink}" target="_blank" style="
-        font-weight: 400;
+        font-weight: 200;
         font-size: 14px;
         white-space: normal;
-        word-break: break-word;
+        word-break: keep-all;
         max-width: 240px;
         line-height: 1.4;
         padding: 4px 12px;
@@ -208,6 +205,68 @@
 
     infoWindow.open(map, marker);
 
-    // 마커 클릭 시 새 창 열기
     naver.maps.Event.addListener(marker, "click", () => {
-      window.open(mapLin
+      window.open(mapLink, "_blank");
+    });
+
+    // 인포윈도우 클릭 시 새 창 열기
+    naver.maps.Event.addListener(infoWindow, 'domready', () => {
+      const link = document.querySelector('.NaverMap a');
+      if(link) {
+        link.onclick = (e) => {
+          e.preventDefault();
+          window.open(mapLink, '_blank');
+        };
+      }
+    });
+
+    const addressText = document.getElementById('address-text');
+    const copyBtn = document.getElementById('copy-button');
+    const btnKo = document.getElementById('btn-ko');
+    const btnEn = document.getElementById('btn-en');
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      addressText.textContent = addressData[lang];
+      infoWindow.setContent(`<a href="${mapLink}" target="_blank" style="
+        font-weight: 200;
+        font-size: 14px;
+        white-space: normal;
+        word-break: keep-all;
+        max-width: 240px;
+        line-height: 1.4;
+        padding: 4px 12px;
+        display: inline-block;
+        color: #292A30;
+        text-decoration: none;
+      ">${addressData[lang]}</a>`);
+      copyBtn.textContent = copyText[lang].button;
+
+      btnKo.classList.remove('active', 'inactive');
+      btnEn.classList.remove('active', 'inactive');
+      if (lang === 'ko') {
+        btnKo.classList.add('active');
+        btnEn.classList.add('inactive');
+      } else {
+        btnEn.classList.add('active');
+        btnKo.classList.add('inactive');
+      }
+    }
+
+    function copyAddress() {
+      const text = addressData[currentLang];
+      const original = copyText[currentLang].button;
+      const success = copyText[currentLang].success;
+
+      navigator.clipboard.writeText(text).then(() => {
+        copyBtn.textContent = success;
+        setTimeout(() => {
+          copyBtn.textContent = original;
+        }, 2000);
+      });
+    }
+
+    setLanguage(currentLang);
+  </script>
+</body>
+</html>
